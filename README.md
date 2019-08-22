@@ -1,18 +1,30 @@
-# Terraform Redis Module for GCP
+# Terraform broker Module for GCP
 
-This module was generated from [terraform-google-module-template](https://github.com/terraform-google-modules/terraform-google-module-template/), which by default generates a module that simply creates a GCS bucket. As the module develops, this README should be updated.
+This repository contains Terraform Modules used to launch a GCP Token Broker HA Cluster on Google Cloud.
 
-The resources/services/activations/deletions that this module will create/trigger are:
+The core template creates two 3-node clusters for Authorizer and Broker applications.
 
-- Create a GCS bucket with the provided name
+## Description
+
+The template writes an installation script to a Cloud Storage Bucket. The installation script installs broker Server, broker Sentinel, and StackDriver Agent. Instance Templates are configured such that any Instance created from the template will download and runs the installation script at startup. Managed Instance Groups use an Instance Template to create cluster member instances and replace each instance that becomes unhealthy.
+
+
+## Failover Characteristics
+
+Systemd will restart broker if the process is stopped on an individual instance.
+
+broker Sentinel will promote a new master node to accept writes if the current master becomes unresponsive.
+
+Managed Instance Group runs a TCP health check and will replace any instance that is unresponsive multiple times in a row.
+
 
 ## Usage
 
 Basic usage of this module is as follows:
 
 ```hcl
-module "redis" {
-  source  = "terraform-google-modules/redis/google"
+module "broker" {
+  source  = "terraform-google-modules/broker/google"
   version = "~> 0.1"
 
   project_id  = "<PROJECT ID>"
@@ -49,6 +61,7 @@ The following dependencies must be available:
 
 - [Terraform][terraform] v0.12
 - [Terraform Provider for GCP][terraform-provider-gcp] plugin v2.0
+- [Terraform Beta Provider for GCP][terraform-provider-google-beta] plugin v2.0
 
 ### Service Account
 
@@ -79,4 +92,5 @@ information on contributing to this module.
 [iam-module]: https://registry.terraform.io/modules/terraform-google-modules/iam/google
 [project-factory-module]: https://registry.terraform.io/modules/terraform-google-modules/project-factory/google
 [terraform-provider-gcp]: https://www.terraform.io/docs/providers/google/index.html
+[terraform-provider-google-beta]: https://github.com/terraform-providers/terraform-provider-google-beta/blob/master/google-beta/
 [terraform]: https://www.terraform.io/downloads.html
